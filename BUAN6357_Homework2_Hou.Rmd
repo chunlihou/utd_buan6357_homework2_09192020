@@ -1,0 +1,101 @@
+---
+title: "BUAN6357_Homework2_Hou"
+author: "Chun-Li Hou"
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 0
+
+**This data set provides information on the number of women murdered each year (per 100,000 standard population) in the U.S.**
+
+```{r, message = FALSE}
+# load package & set environment
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(fpp2, fpp3, dplyr, patchwork, purrr)
+data("wmurders")
+options(digits = 3)
+set.seed(42)
+theme_set(theme_minimal())
+```
+
+## 1
+
+**By studying appropriate graphs of the series in R, find an appropriate ARIMA(p,d,q) model using first difference (d = 1). If there are two equally likely candidate models, then choose the one with a moving average process (MA).**
+
+```{r, message = FALSE}
+# plot chart
+wmurders %>% as_tsibble() %>% gg_tsdisplay(plot_type = "partial")
+
+# plot chart
+wmurders %>% diff() %>% as_tsibble() %>% gg_tsdisplay(plot_type = "partial")
+```
+
+The data at first is clearly not stationary due to having trends. We do the first difference (d = 1) based on the instruction. The result looks better. Also, we decide by the ACF and PACF plot to know that the model could be either p or q as 2. Thus, we have two options But, we choose the one with a moving average process (MA) (q = 2)  based on the instruction.
+
+## 2
+
+**Should you include a constant term in the model? Explain your answer.**
+
+```{r}
+# plot data
+wmurders %>% autoplot() # no drift
+wmurders %>% diff() %>% autoplot() # no drift, no trend
+```
+
+No, I should not include a constant term in the model because I do not see any significant drift in the plots.
+
+## 3
+
+**Fit the model using R and examine the residuals. Is the model satisfactory?**
+
+```{r}
+# fit model
+fit = wmurders %>% as_tsibble() %>% model(arima = ARIMA(value ~ pdq(0, 1, 2)))
+
+# print report
+fit %>% report()
+
+# check residuals
+fit %>% gg_tsresiduals()
+```
+
+Yes, the model is satisfactory due to no significant autocorrelation in residuals and distribution of residuals being normal distributed. 
+
+## 4
+
+**Forecast three times ahead and include the results in a table. Also, create a plot of the series with forecasts and prediction intervals for the next three periods shown.**
+
+```{r}
+# generate forecast
+fit %>% forecast(h = 3) %>% print.data.frame()
+fit %>% forecast(h = 3) %>% autoplot(wmurders)
+```
+
+The table with data and the plot show above.
+
+## 5
+
+**Does ARIMA() give the same model you have chosen? If not, which model do you think is better?**
+
+```{r}
+# weak auto fit model
+fit.auto.w = wmurders %>% as_tsibble() %>%model(ARIMA(value ~ pdq(d = 1)))
+fit.auto.w %>% report()
+
+# strong auto fit model
+fit.auto.s = wmurders %>% as_tsibble() %>%model(ARIMA(value ~ pdq(d = 1),
+                                                      stepwise = F,
+                                                      approximation = F))
+fit.auto.s %>% report()
+
+# compare result
+# fit         AICc=-12.9  ARIMA(0,1,2)
+# fit.auto.w  AICc=-11.4  ARIMA(0,1,0)
+# fit.auto.s  AICc=-12.9  ARIMA(0,1,2)
+```
+
+Yes, the ARIMA() function, in the way that forces to run all combinations (fit.auto.s), gives the same model as chosen before (fit). The one (fit.auto.w) not forced to run all combinations is worse than the one chosen before (fit).
