@@ -11,7 +11,7 @@
 
 <meta name="author" content="Chun-Li Hou" />
 
-<meta name="date" content="2020-09-19" />
+<meta name="date" content="2020-09-23" />
 
 <title>BUAN6357_Homework2_Hou</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">BUAN6357_Homework2_Hou</h1>
 <h4 class="author">Chun-Li Hou</h4>
-<h4 class="date">2020-09-19</h4>
+<h4 class="date">2020-09-23</h4>
 
 </div>
 
@@ -442,33 +442,38 @@ fit %&gt;% forecast(h = 3) %&gt;% print.data.frame()</code></pre>
 <h2>5</h2>
 <p><strong>Does ARIMA() give the same model you have chosen? If not, which model do you think is better?</strong></p>
 <pre class="r"><code># weak auto fit model
-fit.auto.w = wmurders %&gt;% as_tsibble() %&gt;%model(ARIMA(value ~ pdq(d = 1)))
+fit.auto.w = wmurders %&gt;% as_tsibble() %&gt;% model(ARIMA(value ~ pdq()))
 fit.auto.w %&gt;% report()</code></pre>
 <pre><code>## Series: value 
-## Model: ARIMA(0,1,0) 
-## 
-## sigma^2 estimated as 0.04563:  log likelihood=6.73
-## AIC=-11.5   AICc=-11.4   BIC=-9.47</code></pre>
-<pre class="r"><code># strong auto fit model
-fit.auto.s = wmurders %&gt;% as_tsibble() %&gt;%model(ARIMA(value ~ pdq(d = 1),
-                                                      stepwise = F,
-                                                      approximation = F))
-fit.auto.s %&gt;% report()</code></pre>
-<pre><code>## Series: value 
-## Model: ARIMA(0,1,2) 
+## Model: ARIMA(1,2,1) 
 ## 
 ## Coefficients:
-##          ma1    ma2
-##       -0.066  0.371
-## s.e.   0.126  0.164
+##          ar1     ma1
+##       -0.243  -0.826
+## s.e.   0.155   0.114
 ## 
-## sigma^2 estimated as 0.0422:  log likelihood=9.71
-## AIC=-13.4   AICc=-12.9   BIC=-7.46</code></pre>
+## sigma^2 estimated as 0.04632:  log likelihood=6.44
+## AIC=-6.88   AICc=-6.39   BIC=-0.97</code></pre>
+<pre class="r"><code># strong auto fit model
+fit.auto.s = wmurders %&gt;% as_tsibble() %&gt;% model(ARIMA(value ~ pdq(),
+                                                       stepwise = F,
+                                                       approximation = F))
+fit.auto.s %&gt;% report()</code></pre>
+<pre><code>## Series: value 
+## Model: ARIMA(0,2,3) 
+## 
+## Coefficients:
+##          ma1    ma2     ma3
+##       -1.015  0.432  -0.322
+## s.e.   0.128  0.228   0.174
+## 
+## sigma^2 estimated as 0.04475:  log likelihood=7.77
+## AIC=-7.54   AICc=-6.7   BIC=0.35</code></pre>
 <pre class="r"><code># compare result
 # fit         AICc=-12.9  ARIMA(0,1,2)
-# fit.auto.w  AICc=-11.4  ARIMA(0,1,0)
-# fit.auto.s  AICc=-12.9  ARIMA(0,1,2)</code></pre>
-<p>Yes, the ARIMA() function, in the way that forces to run all combinations (fit.auto.s), gives the same model as chosen before (fit). The one (fit.auto.w) not forced to run all combinations is worse than the one chosen before (fit).</p>
+# fit.auto.w  AICc=-6.39  ARIMA(1,2,1)
+# fit.auto.s  AICc=-6.70  ARIMA(0,2,3)</code></pre>
+<p>No, the ARIMA() function in either way of no restriction (fit.auto.w) or yes restriction (fit.auto.s) gives different models as chosen before (fit). The chosen before one (fit) is the best one with the lowest AICc score.</p>
 </div>
 
 

@@ -2,6 +2,7 @@
 title: "BUAN6357_Homework2_Hou"
 author: "Chun-Li Hou"
 date: "`r Sys.Date()`"
+output: pdf_document
 ---
 
 ```{r setup, include = FALSE}
@@ -22,6 +23,8 @@ set.seed(42)
 theme_set(theme_minimal())
 ```
 
+\newpage
+
 ## 1
 
 **By studying appropriate graphs of the series in R, find an appropriate ARIMA(p,d,q) model using first difference (d = 1). If there are two equally likely candidate models, then choose the one with a moving average process (MA).**
@@ -36,6 +39,8 @@ wmurders %>% diff() %>% as_tsibble() %>% gg_tsdisplay(plot_type = "partial")
 
 The data at first is clearly not stationary due to having trends. We do the first difference (d = 1) based on the instruction. The result looks better. Also, we decide by the ACF and PACF plot to know that the model could be either p or q as 2. Thus, we have two options But, we choose the one with a moving average process (MA) (q = 2)  based on the instruction.
 
+\newpage
+
 ## 2
 
 **Should you include a constant term in the model? Explain your answer.**
@@ -47,6 +52,8 @@ wmurders %>% diff() %>% autoplot() # no drift, no trend
 ```
 
 No, I should not include a constant term in the model because I do not see any significant drift in the plots.
+
+\newpage
 
 ## 3
 
@@ -65,6 +72,8 @@ fit %>% gg_tsresiduals()
 
 Yes, the model is satisfactory due to no significant autocorrelation in residuals and distribution of residuals being normal distributed. 
 
+\newpage
+
 ## 4
 
 **Forecast three times ahead and include the results in a table. Also, create a plot of the series with forecasts and prediction intervals for the next three periods shown.**
@@ -77,25 +86,27 @@ fit %>% forecast(h = 3) %>% autoplot(wmurders)
 
 The table with data and the plot show above.
 
+\newpage
+
 ## 5
 
 **Does ARIMA() give the same model you have chosen? If not, which model do you think is better?**
 
 ```{r}
 # weak auto fit model
-fit.auto.w = wmurders %>% as_tsibble() %>%model(ARIMA(value ~ pdq(d = 1)))
+fit.auto.w = wmurders %>% as_tsibble() %>% model(ARIMA(value ~ pdq()))
 fit.auto.w %>% report()
 
 # strong auto fit model
-fit.auto.s = wmurders %>% as_tsibble() %>%model(ARIMA(value ~ pdq(d = 1),
-                                                      stepwise = F,
-                                                      approximation = F))
+fit.auto.s = wmurders %>% as_tsibble() %>% model(ARIMA(value ~ pdq(),
+                                                       stepwise = F,
+                                                       approximation = F))
 fit.auto.s %>% report()
 
 # compare result
 # fit         AICc=-12.9  ARIMA(0,1,2)
-# fit.auto.w  AICc=-11.4  ARIMA(0,1,0)
-# fit.auto.s  AICc=-12.9  ARIMA(0,1,2)
+# fit.auto.w  AICc=-6.39  ARIMA(1,2,1)
+# fit.auto.s  AICc=-6.70  ARIMA(0,2,3)
 ```
 
-Yes, the ARIMA() function, in the way that forces to run all combinations (fit.auto.s), gives the same model as chosen before (fit). The one (fit.auto.w) not forced to run all combinations is worse than the one chosen before (fit).
+No, the ARIMA() function in either way of no restriction (fit.auto.w) or yes restriction (fit.auto.s) gives different models as chosen before (fit). The chosen before one (fit) is the best one with the lowest AICc score.
